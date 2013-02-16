@@ -1,7 +1,8 @@
-/* ==========================================================================
-   HTML5 Boilerplate styles - h5bp.com (generated via initializr.com)
-   ========================================================================== */
-
+* {
+    -moz-box-sizing:border-box;
+    -webkit-box-sizing:border-box;
+    box-sizing:border-box;
+}
 html,
 button,
 input,
@@ -13,6 +14,8 @@ textarea {
 body {
     font-size: 1em;
     line-height: 1.4;
+    margin: 0 auto;
+    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
 }
 
 ::-moz-selection {
@@ -25,199 +28,85 @@ body {
     text-shadow: none;
 }
 
-hr {
-    display: block;
-    height: 1px;
-    border: 0;
-    border-top: 1px solid #ccc;
-    margin: 1em 0;
+.wrapper  {
+    margin: 20px auto;
+    overflow: auto;
+    width: 695px;
+    padding: 10px 0;
+}
+
+.times {
+    float: left;
+    width: 65px;
+    height: 720px;
+    list-style-type: none;
+    margin: -20px 10px 0 0;
     padding: 0;
+    text-align: right;
+    color: #a7a7a7;
+    font-size: 10pt;
+}
+.times > li {
+    margin-top: 14px;
+}
+.times > li:nth-child(even) { /*small*/
+    font-size: 7pt;
 }
 
-img {
-    vertical-align: middle;
+.times > li:nth-child(odd) { /*big*/
+    color: #686868;
+    font-weight: bold;
 }
 
-fieldset {
-    border: 0;
-    margin: 0;
-    padding: 0;
+.times > li:nth-child(odd) > small {
+    margin-left: 5px;
+    font-size: 8pt;
+    color: #a7a7a7;
+    font-weight: normal;
 }
 
-textarea {
-    resize: vertical;
+.events-wrapper {
+    float: right;
+    position: relative;
+    padding: 0 10px;
+    border-left: 1px solid #d6d6d6;
+    width: 620px;
+    height: 720px;
+    background: #ececec;
 }
 
-.chromeframe {
-    margin: 0.2em 0;
-    background: #ccc;
-    color: #000;
-    padding: 0.2em 0;
-}
-
-
-/* ==========================================================================
-   Author's custom styles
-   ========================================================================== */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ==========================================================================
-   Media Queries
-   ========================================================================== */
-
-@media only screen and (min-width: 35em) {
-
-}
-
-@media print,
-       (-o-min-device-pixel-ratio: 5/4),
-       (-webkit-min-device-pixel-ratio: 1.25),
-       (min-resolution: 120dpi) {
-
-}
-
-/* ==========================================================================
-   Helper classes
-   ========================================================================== */
-
-.ir {
-    background-color: transparent;
-    border: 0;
-    overflow: hidden;
-    *text-indent: -9999px;
-}
-
-.ir:before {
-    content: "";
-    display: block;
-    width: 0;
-    height: 150%;
-}
-
-.hidden {
-    display: none !important;
-    visibility: hidden;
-}
-
-.visuallyhidden {
-    border: 0;
-    clip: rect(0 0 0 0);
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    padding: 0;
+.event {
     position: absolute;
-    width: 1px;
+    overflow: auto;
+    background: #fff;
+    border:solid #d6d6d6;
+    border-width: 1px 1px 1px 0;
+    margin: 0 0 0 10px;
+    padding: 10px;
 }
-
-.visuallyhidden.focusable:active,
-.visuallyhidden.focusable:focus {
-    clip: auto;
-    height: auto;
-    margin: 0;
-    overflow: visible;
-    position: static;
-    width: auto;
-}
-
-.invisible {
-    visibility: hidden;
-}
-
-.clearfix:before,
-.clearfix:after {
+.event:after {
     content: " ";
-    display: table;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 5px;
+    background: #4b6ea9;
 }
 
-.clearfix:after {
-    clear: both;
+.event > dt {
+    cursor: pointer;
+    margin: 0;
+    padding: 0 0 0 0;
+    color: #4c6fa9;
+    font-weight: bold;
+    font-size: 10pt
 }
 
-.clearfix {
-    *zoom: 1;
-}
-
-/* ==========================================================================
-   Print styles
-   ========================================================================== */
-
-@media print {
-    * {
-        background: transparent !important;
-        color: #000 !important; /* Black prints faster: h5bp.com/s */
-        box-shadow: none !important;
-        text-shadow: none !important;
-    }
-
-    a,
-    a:visited {
-        text-decoration: underline;
-    }
-
-    a[href]:after {
-        content: " (" attr(href) ")";
-    }
-
-    abbr[title]:after {
-        content: " (" attr(title) ")";
-    }
-
-    /*
-     * Don't show links for images, or javascript/internal links
-     */
-
-    .ir a:after,
-    a[href^="javascript:"]:after,
-    a[href^="#"]:after {
-        content: "";
-    }
-
-    pre,
-    blockquote {
-        border: 1px solid #999;
-        page-break-inside: avoid;
-    }
-
-    thead {
-        display: table-header-group; /* h5bp.com/t */
-    }
-
-    tr,
-    img {
-        page-break-inside: avoid;
-    }
-
-    img {
-        max-width: 100% !important;
-    }
-
-    @page {
-        margin: 0.5cm;
-    }
-
-    p,
-    h2,
-    h3 {
-        orphans: 3;
-        widows: 3;
-    }
-
-    h2,
-    h3 {
-        page-break-after: avoid;
-    }
+.event > dd {
+    margin: 0;
+    padding: 0;
+    color: #797979;
+    font-size: 8pt;
 }

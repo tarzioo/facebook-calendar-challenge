@@ -60,12 +60,7 @@ var layOutDay = (function(maxWidth, maxHeight) {
 		scanAndPlace(sorted);
 		return format(sorted);
 	};
-}(600, 720)); //maxWidth.
+}(600, 720)),//maxWidth, maxHeight
+addEvents  = function(target, events) {
 
-console.log(layOutDay([
-	{id: 1,	start: 0, end: 200 },
-	{id: 2, start: 98, end: 99},
-	{id: 3, start: 0, end: 98},
-	{id: 4, start: 100, end: 200},
-	{id: 5, start: 700, end: 720}
-]));
+};
