@@ -26,66 +26,50 @@ var layOutDay = (function(maxWidth, maxHeight) {
 				return other.start < current.start && other.end > current.start;
 			},
 			scanAndPlace = function(data) {
-				var columns = data.length;
-				data = data.map(function(current, index) {
-					current.pos = 0;
-					current.columns = 1;
-					return current;
-				});
-				var maxColumns = function(siblings) {
-					return siblings.reduce(function(max, current) {
-						return max > (data[current].columns || 0) ? max : data[current].columns;
-					}, 0);
-				}, maxPos = function(siblings) {
-					return siblings.reduce(function(max, current) {
-						return max > (data[current].pos || 0) ? max : data[current].pos;
-					}, 0);
-				};
-				var siblings;
-				for(var i = 0; i<=720;i++) {
-					siblings = data.reduce(function(all, current, index) {
-						if(current.start < i && current.end > i) {
-							all.push(index);
+				var getLayer = function(time) {
+					return data.reduce(function(layer, current, pos) {
+						if(current.start < time && current.end > time) {
+							layer.push(pos);
 						}
-						return all;
+						return layer;
 					}, []);
-					columns = siblings.length;
-					if(siblings.length > 1) {
-						siblings.forEach(function(current, pos) {
-							data[current].columns  = maxColumns(siblings) > columns ? maxColumns(siblings) : columns;
-							data[current].pos  = pos;
-						});
+				}, layer, layers = [],i;
+				for(i = 0; i < data.length; i++) {
+					data[i].columns = data[i].columns || 1;
+					data[i].pos = 0;
+					for(var time = data[i].start; time <= data[i].end; time++) {
+						layer = getLayer(time);
+						if(layer.length) {
+							layers.push(layer);
+						}
+						if(data[i].columns < layer.length) {
+							data[i].columns = layer.length;
+						}
 					}
 				}
-				for(i = 720; i>=1;i--) {
-					siblings = data.reduce(function(all, current, index) {
-						if(current.start < i && current.end > i) {
-							all.push(index);
-						}
-						return all;
-					}, []);
-					columns = siblings.length;
-					if(siblings.length > 1) {
-						siblings.forEach(function(current, pos) {
-							data[current].columns = maxColumns(siblings) > columns ? maxColumns(siblings) : columns;
-							data[current].pos = pos;
-						});
+
+				var key, width;
+				for(key in layers) {
+					layer = layers[key];
+					for(i = 0;i<layer.length;i++) {
+						width = maxWidth / data[layer[i]].columns;
+						data[layer[i]].width = width;
+						data[layer[i]].left = width*i;
+						data[layer[i]].pos = data[layer[i]].pos > i? data[layer[i]].pos:i;
 					}
-
 				}
-
 
 				return data;
 			},
 
 			format = function(data) {
 				return data.map(function(current, index) {
-					var width = current.columns === 0 ? maxWidth : maxWidth / current.columns;
+					var left = current.left;//current.width*current.pos;
 					return {
 						id     : current.id,
 						top    : current.start,
-						width  : width,
-						left   : width * current.pos,
+						width  : current.width,
+						left   : left,
 						start  : current.start,
 						end    : current.end,
 						height : current.end - current.start,
