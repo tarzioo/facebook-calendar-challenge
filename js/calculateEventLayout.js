@@ -1,6 +1,6 @@
 var layOutDay = (function(maxWidth, maxHeight) {
 		"use strict";
-		var sort = function(data) {
+		var filterAndSort = function(data) {
 				return data.filter(function(current) {
 					//validating input
 					if(current.start === void 0 || current.end === void 0) {
@@ -63,13 +63,15 @@ var layOutDay = (function(maxWidth, maxHeight) {
 						left   : width * current.pos,
 						start  : current.start,
 						end    : current.end,
-						height : current.end - current.start
+						height : current.end - current.start,
+						pos: current.pos,
+						siblings: current.siblings
 					};
 				});
 			};
 
 		return function(data) {
-			var sorted = sort(data);
+			var sorted = filterAndSort(data);
 			scanAndPlace(sorted);
 			return format(sorted);
 		};
@@ -82,7 +84,7 @@ var layOutDay = (function(maxWidth, maxHeight) {
 				width  : event.width  + 'px',
 				height : event.height + 'px'
 			});
-			$('<dl>').append('<dt>Sample item:'+event.id+'</dt><dd>Sample location start:'+event.start+', end:'+event.end+'</dd>').appendTo(wrapper);
+			$('<dl>').append('<dt>Sample item:'+event.id+'</dt><dd>Sample location start:'+event.start+', end:'+event.end+', pos:'+event.pos+', siblings:'+event.siblings+'</dd>').appendTo(wrapper);
 
 			wrapper.appendTo(target);
 		});
