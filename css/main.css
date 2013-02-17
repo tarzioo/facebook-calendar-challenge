@@ -38,17 +38,24 @@ body {
 .times {
     float: left;
     width: 65px;
-    height: 720px;
+    height: 730px;
     list-style-type: none;
-    margin: -20px 10px 0 0;
+    margin: -10px 10px 0 0;
     padding: 0;
     text-align: right;
     color: #a7a7a7;
     font-size: 10pt;
+    position: relative;
 }
+
 .times > li {
-    margin-top: 14px;
+    margin-top: 15px;
 }
+
+.times > li:nth-child(1) {
+    margin: 0;
+}
+
 .times > li:nth-child(even) { /*small*/
     font-size: 7pt;
 }
