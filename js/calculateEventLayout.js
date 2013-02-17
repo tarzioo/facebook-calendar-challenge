@@ -84,12 +84,7 @@ var layOutDay = (function(maxWidth, maxHeight) {
 			});
 			$('<dl>').append('<dt>Sample item:'+event.id+'</dt><dd>Sample location start:'+event.start+', end:'+event.end+'</dd>').appendTo(wrapper);
 
-	return function(data) {
-		var sorted = sort(data);
-		scanAndPlace(sorted);
-		return format(sorted);
-	};
-}(600, 720)),//maxWidth, maxHeight
-addEvents  = function(target, events) {
+			wrapper.appendTo(target);
+		});
 
 	};
