@@ -1,5 +1,7 @@
+/*jshint loopfunc:true*/
 var layOutDay = (function(maxWidth, maxHeight) {
 		"use strict";
+		var console = window.console;
 		var filterAndSort = function(data) {
 				return data.filter(function(current) {
 					//validating input
@@ -19,43 +21,66 @@ var layOutDay = (function(maxWidth, maxHeight) {
 					}
 				});
 			},
-			getMembers = function(data, time) {
-				return data.reduce(function(list, event, index) {
-					//checks if time is between the event range
-					if(time > event.start && event.end > time) {
-						list.push(index);
-					}
-					return list;
-				}, []);
+
+			collides = function(current, other) {
+				return other.start < current.start && other.end > current.start;
 			},
-			prev,
-			place = function(data, time) {
-				var members  = getMembers(data, time),
-					siblings = members.length;
-
-				if(prev == members.join() || siblings === 0) {
-					return;
-				}
-				prev = members.join();
-
-				members.forEach(function(current, index) {
-					data[current].pos = index;
-					if(data[current].siblings === void 0 || siblings > data[current].siblings) {
-						data[current].siblings = siblings;
-					}
-				});
-			},
-
 			scanAndPlace = function(data) {
-				for(var time = 0; time <= maxHeight; time++) {
-					place(data, time);
+				var columns = data.length;
+				data = data.map(function(current, index) {
+					current.pos = 0;
+					current.columns = 1;
+					return current;
+				});
+				var maxColumns = function(siblings) {
+					return siblings.reduce(function(max, current) {
+						return max > (data[current].columns || 0) ? max : data[current].columns;
+					}, 0);
+				}, maxPos = function(siblings) {
+					return siblings.reduce(function(max, current) {
+						return max > (data[current].pos || 0) ? max : data[current].pos;
+					}, 0);
+				};
+				var siblings;
+				for(var i = 0; i<=720;i++) {
+					siblings = data.reduce(function(all, current, index) {
+						if(current.start < i && current.end > i) {
+							all.push(index);
+						}
+						return all;
+					}, []);
+					columns = siblings.length;
+					if(siblings.length > 1) {
+						siblings.forEach(function(current, pos) {
+							data[current].columns  = maxColumns(siblings) > columns ? maxColumns(siblings) : columns;
+							data[current].pos  = pos;
+						});
+					}
 				}
-				prev = void 0; //clean prev in case called multiple times.
+				for(i = 720; i>=1;i--) {
+					siblings = data.reduce(function(all, current, index) {
+						if(current.start < i && current.end > i) {
+							all.push(index);
+						}
+						return all;
+					}, []);
+					columns = siblings.length;
+					if(siblings.length > 1) {
+						siblings.forEach(function(current, pos) {
+							data[current].columns = maxColumns(siblings) > columns ? maxColumns(siblings) : columns;
+							data[current].pos = pos;
+						});
+					}
+
+				}
+
+
+				return data;
 			},
 
 			format = function(data) {
-				return data.map(function(current) {
-					var width = current.siblings === 0 ? maxWidth : maxWidth / current.siblings;
+				return data.map(function(current, index) {
+					var width = current.columns === 0 ? maxWidth : maxWidth / current.columns;
 					return {
 						id     : current.id,
 						top    : current.start,
@@ -65,15 +90,16 @@ var layOutDay = (function(maxWidth, maxHeight) {
 						end    : current.end,
 						height : current.end - current.start,
 						pos: current.pos,
-						siblings: current.siblings
+						siblings: current.columns,
+						index: index
 					};
 				});
 			};
 
 		return function(data) {
 			var sorted = filterAndSort(data);
-			scanAndPlace(sorted);
-			return format(sorted);
+			var result = scanAndPlace(sorted);
+			return format(result);
 		};
 	}(600, 720)),//maxWidth, maxHeight
 	addEvents  = function(target, events) {
@@ -84,7 +110,7 @@ var layOutDay = (function(maxWidth, maxHeight) {
 				width  : event.width  + 'px',
 				height : event.height + 'px'
 			});
-			$('<dl>').append('<dt>Sample item:'+event.id+'</dt><dd>Sample location start:'+event.start+', end:'+event.end+', pos:'+event.pos+', siblings:'+event.siblings+'</dd>').appendTo(wrapper);
+			$('<dl>').append('<dt>'+event.id+':i:'+event.index+'Sample item</dt><dd>Sample location start:'+event.start+', end:'+event.end+', pos:'+event.pos+', columns:'+event.siblings+'</dd>').appendTo(wrapper);
 
 			wrapper.appendTo(target);
 		});
