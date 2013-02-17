@@ -85,24 +85,32 @@ body {
 .event {
     position: absolute;
     overflow: auto;
-    background: #fff;
     border:solid #d6d6d6;
     border-width: 1px 1px 1px 0;
-    margin: 0 0 0 10px;
-    padding: 10px;
+    margin-left: 10px;
 }
-.event:after {
+
+.event > dl{
+    background: #fff;
+    margin: 0;
+    height: 100%;
+    padding: 10px;
+    overflow: auto;
+}
+
+.event:before {
     content: " ";
     display: block;
     position: absolute;
     top: 0;
     left: 0;
     bottom: 0;
+    height: 100%;
     width: 5px;
     background: #4b6ea9;
 }
 
-.event > dt {
+.event > dl > dt {
     cursor: pointer;
     margin: 0;
     padding: 0 0 0 0;
@@ -111,7 +119,7 @@ body {
     font-size: 10pt
 }
 
-.event > dd {
+.event > dl > dd {
     margin: 0;
     padding: 0;
     color: #797979;
