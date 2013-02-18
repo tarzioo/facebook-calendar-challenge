@@ -48,15 +48,37 @@ var layOutDay = (function(maxWidth, maxHeight) {
 					}
 				}
 
-				var key, width;
+				var key, width, prev;
 				for(key in layers) {
 					layer = layers[key];
+
+					if(''+prev == ''+layer) {
+						continue;
+					}
+
 					for(i = 0;i<layer.length;i++) {
 						width = maxWidth / data[layer[i]].columns;
 						data[layer[i]].width = width;
 						data[layer[i]].left = width*i;
 						data[layer[i]].pos = data[layer[i]].pos > i? data[layer[i]].pos:i;
 					}
+					prev = layer;
+				}
+
+				for(key in layers) {
+					layer = layers[key];
+					if(''+prev == ''+layer) {
+						continue;
+					}
+					for(i = 1;i<layer.length;i++) {
+						for(var j = i-1; j >= 0; j--) {
+							if(data[layer[j]].left == data[layer[i]].left) {
+								data[layer[i]].left = data[layer[j]].left + data[layer[j]].width;
+								break;
+							}
+						}
+					}
+					prev = layer;
 				}
 
 				return data;
