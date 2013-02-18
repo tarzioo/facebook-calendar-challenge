@@ -28,7 +28,7 @@ var layOutDay = (function(maxWidth, maxHeight) {
 			scanAndPlace = function(data) {
 				var getLayer = function(time) {
 					return data.reduce(function(layer, current, pos) {
-						if(current.start < time && current.end > time) {
+						if(current.start <= time && current.end > time) {
 							layer.push(pos);
 						}
 						return layer;
@@ -42,6 +42,7 @@ var layOutDay = (function(maxWidth, maxHeight) {
 						if(layer.length) {
 							layers.push(layer);
 						}
+
 						if(data[i].columns < layer.length) {
 							data[i].columns = layer.length;
 						}
