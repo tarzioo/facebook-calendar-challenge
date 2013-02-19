@@ -26,76 +26,22 @@ var layOutDay = (function(maxWidth, maxHeight) {
 				return other.start < current.start && other.end > current.start;
 			},
 			scanAndPlace = function(data) {
-				var getLayer = function(time) {
-					return data.reduce(function(layer, current, pos) {
-						if(current.start <= time && current.end > time) {
-							layer.push(pos);
-						}
-						return layer;
-					}, []);
-				}, layer, layers = [],i;
-				for(i = 0; i < data.length; i++) {
-					data[i].columns = data[i].columns || 1;
-					data[i].pos = 0;
-					for(var time = data[i].start; time <= data[i].end; time++) {
-						layer = getLayer(time);
-						if(layer.length) {
-							layers.push(layer);
-						}
-
-						if(data[i].columns < layer.length) {
-							data[i].columns = layer.length;
-						}
-					}
-				}
-
-				var key, width, prev;
-				for(key in layers) {
-					layer = layers[key];
-
-					if(''+prev == ''+layer) {
-						continue;
-					}
-
-					for(i = 0;i<layer.length;i++) {
-						width = maxWidth / data[layer[i]].columns;
-						data[layer[i]].width = width;
-						data[layer[i]].left = width*i;
-						data[layer[i]].pos = data[layer[i]].pos > i? data[layer[i]].pos:i;
-					}
-					prev = layer;
-				}
-
-				for(key in layers) {
-					layer = layers[key];
-					if(''+prev == ''+layer) {
-						continue;
-					}
-					for(i = 1;i<layer.length;i++) {
-						for(var j = i-1; j >= 0; j--) {
-							if(data[layer[j]].left == data[layer[i]].left) {
-								data[layer[i]].left = data[layer[j]].left + data[layer[j]].width;
-								break;
-							}
-						}
-					}
-					prev = layer;
-				}
-
+				
 				return data;
 			},
 
 			format = function(data) {
 				return data.map(function(current, index) {
-					var left = current.left;//current.width*current.pos;
+					var left = ;
 					return {
 						id     : current.id,
 						top    : current.start,
 						width  : current.width,
-						left   : left,
+						left   : current.left,
 						start  : current.start,
 						end    : current.end,
 						height : current.end - current.start,
+						//debugging
 						pos: current.pos,
 						siblings: current.columns,
 						index: index
