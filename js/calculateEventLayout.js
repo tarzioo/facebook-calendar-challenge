@@ -65,10 +65,9 @@ var layOutDay = (function(maxWidth, maxHeight) {
 			},
 			
 			putBesides = function(node, item, depth) {
-				if(item.id == 5) {debugger;}
-				console.log(item.id);
 				if(node.parent) {
 					node.parent.children.push(item);
+					item.parent = node;
 				}
 				item.depth = depth;
 				updateSiblings(item, depth);
@@ -147,6 +146,9 @@ var layOutDay = (function(maxWidth, maxHeight) {
 
 					}
 					current.maxSiblings = max;
+					if(current.parent) {
+						current.parent.maxSiblings = current.maxSiblings;
+					}
 				});
 
 				tree.forEach(function(current) {
@@ -157,6 +159,9 @@ var layOutDay = (function(maxWidth, maxHeight) {
 							}
 							return count;
 						}, current.maxSiblings);
+						if(current.parent) {
+							current.parent.maxSiblings = current.maxSiblings;
+						}
 					}
 				});
 			},
