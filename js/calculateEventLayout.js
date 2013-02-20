@@ -146,7 +146,7 @@ var layOutDay = (function(maxWidth, maxHeight) {
 
 					}
 					current.maxSiblings = max;
-					if(current.parent) {
+					if(current.parent && current.parent.maxSiblings < current.maxSiblings) {
 						current.parent.maxSiblings = current.maxSiblings;
 					}
 				});
@@ -159,7 +159,7 @@ var layOutDay = (function(maxWidth, maxHeight) {
 							}
 							return count;
 						}, current.maxSiblings);
-						if(current.parent) {
+						if(current.parent && current.parent.maxSiblings < current.maxSiblings) {
 							current.parent.maxSiblings = current.maxSiblings;
 						}
 					}
