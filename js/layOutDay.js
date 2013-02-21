@@ -250,7 +250,8 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		];
 	}
 
-	function populate(input) {
+	//layOutDay
+	return function (input) {
 		//initialising tree
 		tree = initialiseTree();
 
@@ -277,9 +278,4 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		//format to expected data structure
 		return format(tree);
 	}
-
-	//the actual encapsulation function that is returned and layOutDay is set to
-	return function(input) {
-		return populate(input);
-	};
 }(720, 600));
