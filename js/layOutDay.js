@@ -1,7 +1,7 @@
 var layOutDay = (function(maxHeight, maxWidth) {
 	"use strict";
 	var tree;
-	//siblings indexed by depth
+	// Siblings container wrapper.
 	var siblingIndex = {
 		index: {},
 		clear: function() {
@@ -15,12 +15,6 @@ var layOutDay = (function(maxHeight, maxWidth) {
 
 		get: function(depth) {
 			return this.index[depth] || [];
-		},
-
-		getFiltered: function(depth, excluded) {
-			return this.get(depth).filter(function(current) {
-				return excluded.id != current.id;
-			});
 		}
 	};
 
@@ -91,7 +85,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 				return true;
 			}
 
-			var siblings = siblingIndex.getFiltered(depth+1, node);
+			var siblings = siblingIndex.get(depth+1);
 			if(iterate(siblings, item, depth+1)) { //BFT
 				return true;
 			}
@@ -99,11 +93,6 @@ var layOutDay = (function(maxHeight, maxWidth) {
 			append(node, item, depth);
 			return true;
 		}
-		//  else {
-		// 	if(iterate(siblingIndex.get(depth), item, depth)) { //BFT
-		// 		return true;
-		// 	}		
-		// }
 		return false;
 	}
 

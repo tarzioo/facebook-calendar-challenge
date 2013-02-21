@@ -30,8 +30,7 @@
 	        {id: 13, start: 600, end: 720},
 	        {id: 16, start: 600, end: 720},
 	        {id: 14, start: 600, end: 660},
-	        {id: 15, start: 660, end: 720},
-	        {id: 15, start: 690, end: 720}
+	        {id: 15, start: 660, end: 720}
 	    ]);
 	});
 }());
