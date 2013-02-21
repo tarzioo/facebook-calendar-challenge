@@ -89,6 +89,12 @@ var layOutDay = (function(maxHeight, maxWidth) {
 
 	// filter and sort the raw data
 	function filterAndSort(data) {
+
+		//validating input is in fact an array
+		if( Object.prototype.toString.call( data ) !== '[object Array]' ) {
+			return [];
+		}
+
 		return data.filter(function(item) {
 			//is start and end set
 			if(item.start === void 0 || item.end === void 0) {
@@ -207,7 +213,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		});
 	}
 
-	//format data for result
+	//format lookup table for result (omitting helper members)
 	function format(tree) {
 		return tree.map(function(node) {
 			return {
