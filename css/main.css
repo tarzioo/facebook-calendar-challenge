@@ -78,7 +78,6 @@ body {
     position: absolute;
     overflow: auto;
     margin-left: 10px;
-    /* letter-spacing: 1px; /* looks closer to the example but im going to leave it commented out*/
 }
 
 .event > dl {
