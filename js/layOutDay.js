@@ -7,12 +7,12 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		clear: function() {
 			this.index = {};
 		},
-		
+
 		add: function(node) {
 			//if first in list, create array
 			var level = this.index[node.depth] || (this.index[node.depth] = []);
 			level.push(node);
-		}, 
+		},
 
 		get: function(depth) {
 			//return siblings or empty array
@@ -20,18 +20,13 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		}
 	};
 
-	//updating sibling search
-	function updateSiblings(item) {
-		siblingIndex.add(item);
-	}
-
 	//add new node to tree
 	function append(node, item, depth) {
 		//increase depth.
 		item.depth = depth+1;
-		
-		//update all sibling nodes
-		updateSiblings(item);
+
+		//add item to siblingIndex
+		siblingIndex.add(item);
 
 		//add to nodes childre
 		node.children.push(item);
@@ -52,9 +47,9 @@ var layOutDay = (function(maxHeight, maxWidth) {
 			return true;
 		} else if((node.start == item.start) || (node.end == item.end)) {
 		//  _  _      _         _  _
-		// | || | OR | | _  OR | || | 
-		// |_|| |    | || |    | || | 
-		//    |_|    |_||_|    |_||_| 
+		// | || | OR | | _  OR | || |
+		// |_|| |    | || |    | || |
+		//    |_|    |_||_|    |_||_|
 			return true;
 		} else {
 			// doesn't overlap
@@ -74,16 +69,18 @@ var layOutDay = (function(maxHeight, maxWidth) {
 
 	// returns true on successful tree placement
 	function traverse(node, item, depth) {
-		if(overlaps(node, item)) { 					
-			if(iterate(node.children, item, depth+1)) { //DFT
+		if(overlaps(node, item)) {
+			//DFT (children)
+			if(iterate(node.children, item, depth+1)) {
 				return true;
 			}
 
-			var siblings = siblingIndex.get(depth+1);
-			if(iterate(siblings, item, depth+1)) { //BFT
+			//BFT (siblings)
+			if(iterate(siblingIndex.get(depth+1), item, depth+1)) {
 				return true;
 			}
-	
+
+			//in case where no children nor any siblings overlap, append the item under the current node.
 			append(node, item, depth);
 			return true;
 		}
@@ -97,7 +94,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 			if(item.start === void 0 || item.end === void 0) {
 				return false;
 			}
-			
+
 			//not out of bounds.
 			if(item.end > maxHeight) {
 				return false;
@@ -107,7 +104,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 			if(item.start >= item.end) {
 				return false;
 			}
-			
+
 			//not less than zero, no need to check end
 			//already validated its not passing start.
 			if(item.start < 0) {
@@ -127,7 +124,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 	}
 
 	//prepare each node for tree.
-	function prepare(data) { 
+	function prepare(data) {
 		return filterAndSort(data).map(function(node) {
 			return {
 				id       : node.id,
@@ -142,7 +139,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 			}
 		});
 	}
-	
+
 	//set width of each node
 	function setWidths() {
 		//Only need the leaves from the lookup table
@@ -155,14 +152,14 @@ var layOutDay = (function(maxHeight, maxWidth) {
 			var node = leaf, maxDepth = 0;
 			while(node.parent) {
 				maxDepth = maxDepth > node.depth ? maxDepth : node.depth;
-				node = node.parent; 
+				node = node.parent;
 			}
 
 			node = leaf;
-			
+
 			while(node.parent) {
 				node.maxDepth = maxDepth;
-				node = node.parent; 
+				node = node.parent;
 			}
 		});
 
@@ -171,14 +168,14 @@ var layOutDay = (function(maxHeight, maxWidth) {
 			var node = leaf, maxDepth = leaf.maxDepth;
 			while(node.parent) {
 				maxDepth = maxDepth > node.maxDepth ? maxDepth : node.maxDepth;
-				node = node.parent; 
+				node = node.parent;
 			}
 
 			node = leaf;
-			
+
 			while(node.parent) {
 				node.maxDepth = maxDepth;
-				node = node.parent; 
+				node = node.parent;
 			}
 		});
 
@@ -208,7 +205,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		//setting width for each node
 		tree.forEach(function(node) {
 			node.width = maxWidth / (node.maxDepth+1);
-		}); 
+		});
 	}
 
 	//format data for result
@@ -230,9 +227,9 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		return [
 			{ //creating root element
 				id       : 'root',
-				start    : 0, 
+				start    : 0,
 				end      : 720,
-				depth    : -1, 
+				depth    : -1,
 				children : []
 			}
 		];
@@ -240,34 +237,34 @@ var layOutDay = (function(maxHeight, maxWidth) {
 
 	function populate(input) {
 		//initialising tree
-		tree = initialiseTree(); 
+		tree = initialiseTree();
 
 		//clearing sibling index
 		siblingIndex.clear();
-		
+
 		//filtering, sorting, initializing default values
-		input = prepare(input); 
-		
+		input = prepare(input);
+
 		//this is the root node which is later disposed
-		var root = tree[0]; 
+		var root = tree[0];
 
 		//actual search and place
-		input.forEach(function(item) { 
+		input.forEach(function(item) {
 			traverse(root, item, -1);
 		});
 
 		//setting width for each node
-		setWidths(); 
+		setWidths();
 
 		//dispose of root.
 		tree.shift();
 
 		//format to expected data structure
-		return format(tree); 
+		return format(tree);
 	}
-	
+
 	//the actual encapsulation function that is returned and layOutDay is set to
-	return function(input) { 
+	return function(input) {
 		return populate(input);
 	};
 }(720, 600));
