@@ -1,7 +1,7 @@
 var layOutDay = (function(maxHeight, maxWidth) {
 	"use strict";
 	var tree;
-	// Siblings container wrapper.
+	// Siblings container wrapper
 	var siblingIndex = {
 		index: {},
 		clear: function() {
@@ -9,43 +9,42 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		},
 		
 		add: function(node) {
+			//if first in list, create array
 			var level = this.index[node.depth] || (this.index[node.depth] = []);
 			level.push(node);
 		}, 
 
 		get: function(depth) {
+			//return siblings or empty array
 			return this.index[depth] || [];
 		}
 	};
 
-	//just a helper function, returns a fresh array instead of a mutable.
+	//just a helper function, returns a fresh array instead of a mutable
 	function cloneArray(array) {
 		return [].concat(array);
 	}
 
-	//updating sibling search.
+	//updating sibling search
 	function updateSiblings(item) {
 		siblingIndex.add(item);
 	}
 
 	//add new node to tree
 	function append(node, item, depth) {
-		//increace depth.
+		//increase depth.
 		item.depth = depth+1;
 		
-		//delete tmp siblings from item
-		delete item.siblings
-
-		//update all sibling nodes.
+		//update all sibling nodes
 		updateSiblings(item);
 
-		//add to nodes childre.
+		//add to nodes childre
 		node.children.push(item);
 
 		//set parent.
 		item.parent = node;
 
-		//add to lookup table.
+		//add to lookup table
 		tree.push(item);
 	}
 
@@ -63,12 +62,12 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		//    |_|    |_||_|    |_||_| 
 			return true;
 		} else {
-			// doesn't overlap.
+			// doesn't overlap
 			return false;
 		}
 	}
 
-	//helper function to iterate over a list of nodes.
+	//helper function to iterate over a list of nodes
 	function iterate(list, item, depth) {
 		for(var key in list) {
 			if(traverse(list[key], item, depth)) {
@@ -78,7 +77,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		return false;
 	}
 
-	// returns true on successful tree placement.
+	// returns true on successful tree placement
 	function traverse(node, item, depth) {
 		if(overlaps(node, item)) { 					
 			if(iterate(node.children, item, depth+1)) { //DFT
@@ -96,6 +95,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		return false;
 	}
 
+	// filter and sort the raw data
 	function filterAndSort(data) {
 		return data.filter(function(item) {
 			//is start and end set
@@ -131,29 +131,31 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		});
 	}
 
+	//prepare each node for tree.
 	function prepare(data) { 
-		//prepearing each node for tree.
 		return filterAndSort(data).map(function(node) {
 			return {
 				id       : node.id,
 				start    : node.start,
 				end      : node.end,
-				
+				height   : node.end - node.start,
+				width    : 0,
+				//helpers
 				children : [],
-
 				depth    : 0,
 				maxDepth : 0
 			}
 		});
 	}
 	
-	function setMaxDepth() {
-		//only need the leaves
+	//set width of each node
+	function setWidths() {
+		//Only need the leaves from the lookup table
 		var leaves = tree.filter(function(node) {
 			return node.children.length == 0;
 		}), maxDepth;
 
-		//trasversing first time to propogate to the roots (node.depth).
+		//Trasversing first time to propogate to the roots (node.depth)
 		leaves.forEach(function(leaf) {
 			var node = leaf, maxDepth = 0;
 			while(node.parent) {
@@ -169,7 +171,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 			}
 		});
 
-		//trasversing second time to propogate FROM roots (node.maxDepth).
+		//Trasversing second time to propogate FROM roots (node.maxDepth)
 		leaves.forEach(function(leaf) {
 			var node = leaf, maxDepth = leaf.maxDepth;
 			while(node.parent) {
@@ -184,29 +186,54 @@ var layOutDay = (function(maxHeight, maxWidth) {
 				node = node.parent; 
 			}
 		});
+
+		//Third time to deal with reverse-overlaping nodes
+		//Example:
+		// _
+		//| | _
+		//|_|| |
+		// _ | |
+		//| ||_|
+		//|_|
+		leaves.forEach(function(leaf) {
+			var depth    = leaf.maxDepth+1;
+			var siblings = siblingIndex.get(depth);
+
+			while(siblings.length > 0) {
+				for(var index in siblings) {
+					if(overlaps(siblings[index], leaf)) {
+						leaf.maxDepth = siblings[index].maxDepth;
+						return;
+					}
+				}
+				siblings = siblingIndex.get(++depth);
+			}
+		});
+
+		//setting width for each node
+		tree.forEach(function(node) {
+			node.width = maxWidth / (node.maxDepth+1);
+		}); 
 	}
 
 	//format data for result
 	function format(tree) {
 		return tree.map(function(node) {
-			var width = maxWidth / (node.maxDepth+1),
-				left  = width * node.depth;
-
 			return {
 				id     : node.id,
 				start  : node.start,
 				end    : node.end,
 				top    : node.start,
-				left   : left,
-				width  : width,
-				height : node.end - node.start
+				left   : node.width * node.depth,
+				width  : node.width,
+				height : node.height
 			};
 		});
 	}
 
 	function initialzeTree() {
 		return [
-			{ // creating root element.
+			{ //creating root element
 				id       : 'root',
 				start    : 0, 
 				end      : 720,
@@ -217,30 +244,30 @@ var layOutDay = (function(maxHeight, maxWidth) {
 	}
 
 	function populate(input) {
-		//just initializing tree.
+		//just initializing tree
 		tree = initialzeTree(); 
 
 		//clearing sibling index
 		siblingIndex.clear();
 		
-		//filtering, sorting, initializing default values.
+		//filtering, sorting, initializing default values
 		input = prepare(input); 
 		
-		//this is the root node which is later disposed.
+		//this is the root node which is later disposed
 		var root = tree[0]; 
 
-		//actual search and place action.
+		//actual search and place
 		input.forEach(function(item) { 
 			traverse(tree[0], item, -1);
 		});
 
-		//setting maximum depth across tree, later used to determine placement(flatten).
-		setMaxDepth(); 
+		//setting width for each node
+		setWidths(); 
 
 		//dispose of root.
 		tree.shift();
 
-		//format to expected data structure.
+		//format to expected data structure
 		return format(tree); 
 	}
 	
