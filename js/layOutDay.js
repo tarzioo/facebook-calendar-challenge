@@ -40,18 +40,23 @@ var layOutDay = (function(maxHeight, maxWidth) {
 
 	function overlaps(node, item) {
 		if(item.start >= node.start && item.start < node.end) {
-		//  _
-		// | | _
-		// |_|| |
-		//    |_|
+			//  _           _  _
+			// | | _       | || |
+			// |_|| |  OR  | ||_|
+			//    |_|      |_|
 			return true;
 		} else if((node.start == item.start) || (node.end == item.end)) {
-		//  _  _      _         _  _
-		// | || | OR | | _  OR | || |
-		// |_|| |    | || |    | || |
-		//    |_|    |_||_|    |_||_|
+			//  _         _  _
+			// | | _  OR | || |
+			// | || |    | || |
+			// |_||_|    |_||_|
 			return true;
 		} else {
+			//  _ never that
+			// | |
+			// |_|_
+			//   | |
+			//   |_|
 			// doesn't overlap
 			return false;
 		}
