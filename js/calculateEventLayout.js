@@ -2,7 +2,27 @@ var layOutDay = (function(maxHeight, maxWidth) {
 	"use strict";
 	var tree;
 	//siblings indexed by depth
-	var siblingIndex = {};
+	var siblingIndex = {
+		index: {},
+		clear: function() {
+			this.index = {};
+		},
+		
+		add: function(node) {
+			var level = this.index[node.depth] || (this.index[node.depth] = []);
+			level.push(node);
+		}, 
+
+		get: function(depth) {
+			return this.index[depth] || [];
+		},
+
+		getFiltered: function(depth, excluded) {
+			return this.get(depth).filter(function(current) {
+				return excluded.id != current.id;
+			});
+		}
+	};
 
 	//just a helper function, returns a fresh array instead of a mutable.
 	function cloneArray(array) {
@@ -11,8 +31,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 
 	//updating sibling search.
 	function updateSiblings(item) {
-		var siblings = siblingIndex[item.depth] || (siblingIndex[item.depth] = []);
-		siblings.push(item);
+		siblingIndex.add(item);
 	}
 
 	//add new node to tree
@@ -67,22 +86,24 @@ var layOutDay = (function(maxHeight, maxWidth) {
 
 	// returns true on successful tree placement.
 	function traverse(node, item, depth) {
-		if(overlaps(node, item)) { 
-			
-			//for BFT
-			item.siblings = cloneArray(siblingIndex[depth+1] || []);  
-
+		if(overlaps(node, item)) { 					
 			if(iterate(node.children, item, depth+1)) { //DFT
 				return true;
 			}
 
-			append(node, item, depth);
-			return true;
-		} else if(item.siblings.length > 0){ //BFT
-			if(traverse(item.siblings.shift(), item, depth)) {
+			var siblings = siblingIndex.getFiltered(depth+1, node);
+			if(iterate(siblings, item, depth+1)) { //BFT
 				return true;
 			}
-		} 
+	
+			append(node, item, depth);
+			return true;
+		}
+		//  else {
+		// 	if(iterate(siblingIndex.get(depth), item, depth)) { //BFT
+		// 		return true;
+		// 	}		
+		// }
 		return false;
 	}
 
@@ -111,7 +132,6 @@ var layOutDay = (function(maxHeight, maxWidth) {
 
 			//all fine
 			return true;
-
 		}).sort(function(a, b) {
 			//sorting by start time then by length.
 			if((a.start - b.start) === 0) {
@@ -131,10 +151,9 @@ var layOutDay = (function(maxHeight, maxWidth) {
 				end      : node.end,
 				
 				children : [],
-				siblings : [],
-				
+
 				depth    : 0,
-				maxDepth : 0,
+				maxDepth : 0
 			}
 		});
 	}
@@ -203,8 +222,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 				start    : 0, 
 				end      : 720,
 				depth    : -1, 
-				children : [], 
-				siblings : []
+				children : []
 			}
 		];
 	}
@@ -214,7 +232,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		tree = initialzeTree(); 
 
 		//clearing sibling index
-		siblingIndex = {};
+		siblingIndex.clear();
 		
 		//filtering, sorting, initializing default values.
 		input = prepare(input); 
@@ -222,8 +240,8 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		//this is the root node which is later disposed.
 		var root = tree[0]; 
 
+		//actual search and place action.
 		input.forEach(function(item) { 
-			//actual search and place action.
 			traverse(tree[0], item, -1);
 		});
 
