@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>facebook calendar</title>
+        <title>facebook agenda</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
@@ -16,7 +16,6 @@
         <![endif]-->
     </head>
     <body>
-
         <div class="wrapper">
             <ul class="times">
                 <li>9:00<small>AM</small></li>
@@ -47,34 +46,8 @@
             </ul>
             <div class="events-wrapper"></div>
         </div>
-
         <script src="js/vendor/jquery-1.9.1.min.js"></script>
-
         <script src="js/calculateEventLayout.js"></script>
         <script src="js/main.js"></script>
-        <script>
-            $(function() {
-                addEvents($('.events-wrapper'), [
-                    {id:  0, start: 100, end: 300},
-                    {id:  1, start: 150, end: 400},
-                    {id:  2, start: 160, end: 350},
-                    {id:  3, start: 400, end: 600},
-                    {id:  4, start: 420, end: 620},
-                    {id:  5, start: 400, end: 600},
-                    {id:  6, start: 400, end: 600},
-                    {id:  7, start:   0, end: 600},
-                    {id:  8, start: 420, end: 600},
-                    {id:  9, start:   0, end: 360},
-                    {id: 10, start:   0, end: 150},
-                    {id: 11, start:  20, end: 360},
-                    {id: 12, start:  20, end: 360},
-                    {id: 13, start: 600, end: 720},
-                    {id: 16, start: 600, end: 720},
-                    {id: 14, start: 600, end: 660},
-                    {id: 15, start: 660, end: 720},
-                    {id: 15, start: 690, end: 720}
-                ]);
-            });
-        </script>
     </body>
 </html>
