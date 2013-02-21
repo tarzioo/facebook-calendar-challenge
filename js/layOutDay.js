@@ -20,11 +20,6 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		}
 	};
 
-	//just a helper function, returns a fresh array instead of a mutable
-	function cloneArray(array) {
-		return [].concat(array);
-	}
-
 	//updating sibling search
 	function updateSiblings(item) {
 		siblingIndex.add(item);
@@ -231,7 +226,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		});
 	}
 
-	function initialzeTree() {
+	function initialiseTree() {
 		return [
 			{ //creating root element
 				id       : 'root',
@@ -244,8 +239,8 @@ var layOutDay = (function(maxHeight, maxWidth) {
 	}
 
 	function populate(input) {
-		//just initializing tree
-		tree = initialzeTree(); 
+		//initialising tree
+		tree = initialiseTree(); 
 
 		//clearing sibling index
 		siblingIndex.clear();
@@ -258,7 +253,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 
 		//actual search and place
 		input.forEach(function(item) { 
-			traverse(tree[0], item, -1);
+			traverse(root, item, -1);
 		});
 
 		//setting width for each node
