@@ -202,8 +202,9 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		tree.forEach(function(leaf) {
 			var nextDepth = leaf.maxDepth+1;
 			var siblings  = siblingIndex.get(nextDepth);
-
+			//iterate on siblings (y)
 			while(siblings.length > 0) {
+				//iterate on siblings (x)
 				for(var index in siblings) {
 					if(overlaps(siblings[index], leaf)) {
 						leaf.maxDepth = Math.max(leaf.maxDepth, siblings[index].maxDepth);
