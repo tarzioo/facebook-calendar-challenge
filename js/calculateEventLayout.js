@@ -194,19 +194,16 @@
 var layOutDay = (function(maxHeight, maxWidth) {
 	"use strict";
 	var tree;
+	
+	function cloneArray(array) {
+		return [].concat(array);
+	}
 
 	function updateSiblings(item) {
-		item.siblings = tree.reduce(function(siblings, current, index) {
-			// if(index == 0) { //removing root from calculation.
-			// 	return siblings;
-			// }
+		item.siblings = tree.reduce(function(siblings, current) {
 			if(item.depth == current.depth) {
-				console.log(item.depth == current.depth, item.id,':', item.depth, current.id, ':', current.depth);
 				siblings.push(current);
 				current.siblings.push(item);
-				if(current.id == 0) {
-					debugger;
-				}
 			}
 			return siblings;
 		}, []);
@@ -215,31 +212,23 @@ var layOutDay = (function(maxHeight, maxWidth) {
 	function append(node, item, depth) {
 		item.depth = depth+1;
 		updateSiblings(item);
+
 		if(node.children) {
 			node.children.push(item);
 		} else {
 			node.children = [item];
 		}
+
 		item.parent = node;
 		tree.push(item);
 	}
 
 	function collides(node, item) {
-		if(node.collides[item.id]) {
+		if(item.start > node.start && item.start < node.end) {
 			return true;
-		} else if(node.notCollides[item.id]) {
-			return false;
-		}
-
-		if(/*(node.start == item.start && node.end == item.end) || */
-			(item.start > node.start && item.start < node.end) ||
-			(node.start == item.start) || (node.end == item.end)) {
-			node.collides[item.id] = true;
-			item.collides[node.id] = true;
+		} else if((node.start == item.start) || (node.end == item.end)) {
 			return true;
 		} else {
-			node.notCollides[item.id] = true;
-			item.notCollides[node.id] = true;
 			return false;
 		}
 	}
@@ -255,11 +244,10 @@ var layOutDay = (function(maxHeight, maxWidth) {
 
 	function traverse(node, item, depth) {
 		if(collides(node, item)) { 
-			
+
 			//optimising BFT(sibling search)
 			if(node.children[0]) {
-				//concating to clone the array.
-				item.siblings = [].concat(node.children[0].siblings);  
+				item.siblings = cloneArray(node.children[0].siblings);  
 			}
 
 			if(iterate(node.children, item, depth+1)) { //DFT
@@ -320,71 +308,110 @@ var layOutDay = (function(maxHeight, maxWidth) {
 				
 				children : [],
 				siblings : [],
-
-				collides : {},
-				notCollides : {},
 				
-				depth    : 0
+				depth    : 0,
+				maxDepth : 0,
 			}
 		});
 	}
 	
-	function flatten(tree) {
-		return tree.reduce(function(list, item, index) {
-			var width = maxWidth / Object.keys(item.collides).length,
+	function setMaxDepth() {
+		//only need the leaves
+		var leaves = tree.filter(function(current) {
+			return current.children.length == 0;
+		}), maxDepth;
+
+		//trasversing first time to propogate to the roots (current.depth).
+		leaves.forEach(function(leaf) {
+			var current = leaf, maxDepth = 0;
+			while(current.parent) {
+				maxDepth = maxDepth > current.depth ? maxDepth : current.depth;
+				current = current.parent; 
+			}
+
+			current = leaf;
+			
+			while(current.parent) {
+				current.maxDepth = maxDepth;
+				current = current.parent; 
+			}
+		});
+
+		//trasversing second time to propogate FROM roots (current.maxDepth).
+		leaves.forEach(function(leaf) {
+			var current = leaf, maxDepth = leaf.maxDepth;
+			while(current.parent) {
+				maxDepth = maxDepth > current.maxDepth ? maxDepth : current.maxDepth;
+				current = current.parent; 
+			}
+
+			current = leaf;
+			
+			while(current.parent) {
+				current.maxDepth = maxDepth;
+				current = current.parent; 
+			}
+		});
+	}
+
+	//format data for result
+	function format(tree) {
+		return tree.map(function(item) {
+			var width = maxWidth / (item.maxDepth+1),
 				left  = width * item.depth;
-			list.push({
+
+			return {
 				id     : item.id,
 				start  : item.start,
 				end    : item.end,
 				top    : item.start,
 				left   : left,
 				width  : width,
-				height : item.end - item.start,
-				//debug:
-				index    : index,
-				collides : Object.keys(item.collides).length,
-				siblings : Object.keys(item.siblings).length,
-				depth    : item.depth
-
-			});
-			return list.concat(flatten(item.children));
-		}, []);
+				height : item.end - item.start
+			};
+		});
 	}
+
+	function initialzeTree() {
+		return [
+			{ // creating root element.
+				id       : 'root',
+				start    : 0, 
+				end      : 720,
+				depth    : -1, 
+				children : [], 
+				siblings : []
+			}
+		];
+	}
+
 	function populate(input) {
-		tree = [{id:'root',start: 0, end: 720, collides: {},notCollides:{}, children: [], depth:-1, siblings: []}]; //just initializing tree.
-		input = prepare(input);
-		//tree.push(input.shift());
-		input.forEach(function(item) {
+		//just initializing tree.
+		tree = initialzeTree(); 
+
+		//filtering, sorting, initializing default values.
+		input = prepare(input); 
+		
+		//this is the root element which is later disposed.
+		var root = tree[0]; 
+
+		input.forEach(function(item) { 
+			//actual search and place action.
 			traverse(tree[0], item, -1);
 		});
-		console.log(tree);
-		tree = tree.shift().children;
-		return flatten(tree);
-	}
 
-	return function(input) {
+		//setting maximum depth across tree, later used to determine placement(flatten).
+		setMaxDepth(); 
+
+		//dispose of root.
+		tree.shift();
+
+		//format to expected data structure.
+		return format(tree); 
+	}
+	
+	//the actual encapsulation function that is returned and layOutDay is set to
+	return function(input) { 
 		return populate(input);
 	};
 }(720, 600));
-
-	addEvents  = function(target, events) {
-		layOutDay(events).forEach(function(event) {
-			var wrapper = $('<div>').addClass('event').css({
-				top    : event.top    + 'px',
-				left   : event.left   + 'px',
-				width  : event.width  + 'px',
-				height : event.height + 'px'
-			});
-			$('<dl>').append(
-				'<dt>'+event.id+':i:'+event.index+
-				'Sample item</dt><dd>Sample location start:'+event.start+
-				', end:'+event.end+
-				', depth:'+event.depth+
-				', collides: '+event.collides
-				+', siblings:'+event.siblings+'</dd>').appendTo(wrapper);
-
-			wrapper.appendTo(target);
-		});
-
-	};
