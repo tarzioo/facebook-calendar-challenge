@@ -70,6 +70,10 @@ var layOutDay = (function(maxHeight, maxWidth) {
 	// returns true on successful tree placement
 	function traverse(node, item, depth) {
 		if(overlaps(node, item)) {
+
+			//* Idealy for large sets checking children first would be much faster,                 *
+			//* but then filtering children from siblings is nessesary which is adding complexity.  *
+
 			//BFT (siblings)
 			if(iterate(siblingIndex.get(depth+1), item, depth+1)) {
 				return true;
@@ -137,45 +141,56 @@ var layOutDay = (function(maxHeight, maxWidth) {
 	}
 
 	//find max depth for each tree branch
-	function setMaxDepth(secondRun) {
+	function setMaxDepth() {
+		// visit and set maxDepth on all of node's children
+		var setChildren = function(node, depth) {
+			node.maxDepth = Math.max(node.maxDepth, depth);
+			node.children.forEach(function(child) {
+				setChildren(child, depth);
+			});
+		};
+
 		//Only need the leaves from the lookup table
 		var leaves = tree.filter(function(node) {
 			return node.children.length == 0;
 		});
 
-		//if this function was called because of reverse overlapping this
-		//will overwrite the change so dont run it :)
-		if(!secondRun) {
-			//Trasversing first time to propogate to the roots (node.depth)
-			leaves.forEach(function(leaf) {
-				var node = leaf, maxDepth = 0;
-				while(node.parent) {
-					maxDepth = maxDepth > node.depth ? maxDepth : node.depth;
-					node = node.parent;
-				}
-
-				node = leaf;
-
-				while(node.parent) {
-					node.maxDepth = maxDepth;
-					node = node.parent;
-				}
-			});
-		}
-
-		//Trasversing second time to propogate FROM roots (node.maxDepth)
+		//visit every leaf, find maxDepth, reach parent and set children
 		leaves.forEach(function(leaf) {
-			var node = leaf, maxDepth = leaf.maxDepth;
-			while(node.parent) {
-				maxDepth = maxDepth > node.maxDepth ? maxDepth : node.maxDepth;
-				node = node.parent;
+			var node = leaf, maxDepth = 0;
+			while(1) {
+				maxDepth = Math.max(maxDepth, node.depth);
+				if(node.parent.depth >= 0) {
+					//next node is not the root node
+					node = node.parent;
+				} else {
+					//reached root node
+					setChildren(node, maxDepth);
+					break;
+				}
 			}
+		});
 
-			node = leaf;
+		//Covering a case of reverse-overlapping nodes
+		//Example:
+		// ___           ___
+		//| z | ___     | z | ___
+		//|___|| y |    |___|| y |
+		// ____|___| =>  ___ |   |
+		//| x      |    | x ||___|
+		//|________|	|___|
+		//
+		tree.forEach(function(leaf) {
+			var nextDepth = leaf.maxDepth+1;
+			var siblings  = siblingIndex.get(nextDepth);
 
-			while(node.parent) {
-				node.maxDepth = maxDepth;
-				node = node.parent;
+			while(siblings.length > 0) {
+				for(var index in siblings) {
+					if(overlaps(siblings[index], leaf)) {
+						leaf.maxDepth = siblings[index].maxDepth;
+					}
+				}
+				siblings = siblingIndex.get(++nextDepth);
 			}
 		});
 	}
@@ -186,38 +201,7 @@ var layOutDay = (function(maxHeight, maxWidth) {
 		//finding max depth.
 		setMaxDepth()
 
-		//Covering a case of reverse-overlaping nodes(x)
-		//Example:
-		// ___
-		//|   | ___
-		//|___||   |
-		// ___ |   |
-		//| x ||___|
-		//|___|
-		var change = false;
-		tree.forEach(function(leaf) {
-			var depth    = leaf.maxDepth+1;
-			var siblings = siblingIndex.get(depth);
-
-			while(siblings.length > 0) {
-				for(var index in siblings) {
-					if(overlaps(siblings[index], leaf)) {
-						leaf.maxDepth = siblings[index].maxDepth;
-						change = true;
-						return;
-					}
-				}
-				siblings = siblingIndex.get(++depth);
-			}
-		});
-
-		//if reverse overlapping affected depth
-		//we need to re-set the depth
-		if(change) {
-			setMaxDepth(change);
-		}
-
-		//setting width for each node
+		//calculate and set width for each node
 		tree.forEach(function(node) {
 			node.width = maxWidth / (node.maxDepth+1);
 		});
