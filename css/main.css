@@ -27,7 +27,7 @@ body {
     width: 65px;
     height: 730px;
     list-style-type: none;
-    margin: -11px 10px 0 0;
+    margin: -18px 10px 0 0;
     padding: 0;
     text-align: right;
     color: #a7a7a7;
@@ -37,7 +37,7 @@ body {
 
 .times > li {
     height: 30px;
-    vertical-align: top;
+    line-height: 30px;
 }
 
 .times > li:nth-child(even) { /*small*/
